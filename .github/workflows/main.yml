@@ -40,8 +40,8 @@ jobs:
       env:
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        EXCLUDED: ${{ env.EXCLUDED }}
-        EXCLUDED_LANGS: ${{ env.EXCLUDED_LANGS }}
+        EXCLUDED: timokoessler/github-stats
+        EXCLUDED_LANGS: html,css
         EXCLUDE_FORKED_REPOS: true
 
     # Commit all changed files to the repository
