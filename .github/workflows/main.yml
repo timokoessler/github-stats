@@ -4,7 +4,7 @@ on:
   push:
     branches: [ master ]
   schedule:
-    - cron: "5 0 * * *"
+    - cron: "35 0 */2 * *"
   workflow_dispatch:
 
 permissions:
@@ -40,15 +40,15 @@ jobs:
       env:
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        EXCLUDED: ${{ secrets.EXCLUDED }}
-        EXCLUDED_LANGS: ${{ secrets.EXCLUDED_LANGS }}
+        EXCLUDED: ${{ env.EXCLUDED }}
+        EXCLUDED_LANGS: ${{ env.EXCLUDED_LANGS }}
         EXCLUDE_FORKED_REPOS: true
 
     # Commit all changed files to the repository
     - name: Commit to the repo
       run: |
-        git config --global user.name "jstrieb/github-stats"
-        git config --global user.email "github-stats[bot]@jstrieb.github.io"
+        git config --global user.name "GitHub Action"
+        git config --global user.email "action@github.com"
         git add .
         # Force the build to succeed, even if no files were changed
         git commit -m 'Update generated files' || true
