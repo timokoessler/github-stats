@@ -41,7 +41,7 @@ jobs:
         ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         EXCLUDED: timokoessler/github-stats
-        EXCLUDED_LANGS: html,css
+        EXCLUDED_LANGS: html,css,mdx,blade
         EXCLUDE_FORKED_REPOS: true
 
     # Commit all changed files to the repository
