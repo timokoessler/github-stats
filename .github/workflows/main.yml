@@ -2,7 +2,7 @@ name: Generate Stats Images
 
 on:
   push:
-    branches: [ master ]
+    branches: [master]
   schedule:
     - cron: "35 0 * * *"
   workflow_dispatch:
@@ -10,46 +10,46 @@ on:
 permissions:
   contents: write
 
+defaults:
+  run:
+    shell: bash -euxo pipefail {0}
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 120
 
     steps:
-    # Check out repository under $GITHUB_WORKSPACE, so the job can access it
-    - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
-    # Run using Python 3.8 for consistency and aiohttp
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.8'
-        architecture: 'x64'
-        cache: 'pip'
+      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2 tag
+        with:
+          version: 0.16.0
 
-    # Install dependencies with `pip`
-    - name: Install requirements
-      run: |
-        python3 -m pip install --upgrade pip setuptools wheel
-        python3 -m pip install -r requirements.txt
+      - name: Build
+        run: |
+          zig build
 
-    # Generate all statistics images
-    - name: Generate images
-      run: |
-        python3 --version
-        python3 generate_images.py
-      env:
-        ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        EXCLUDED: timokoessler/github-stats
-        EXCLUDED_LANGS: html,css,mdx,blade
-        EXCLUDE_FORKED_REPOS: true
+      - name: Generate images
+        run: |
+          ./zig-out/bin/github-stats
+        env:
+          ACCESS_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          EXCLUDE_REPOS: ${{ secrets.EXCLUDE_REPOS }}
+          EXCLUDE_LANGS: ${{ secrets.EXCLUDE_LANGS }}
+          EXCLUDE_FORKED_REPOS: "true"
+          EXCLUDE_PRIVATE: "false"
+          SILENT: "true"
+          # TODO: Remove this when they get their API working again
+          # https://github.com/orgs/community/discussions/192970
+          MAX_RETRIES: 5
 
-    # Commit all changed files to the repository
-    - name: Commit to the repo
-      run: |
-        git config --global user.name "GitHub Action"
-        git config --global user.email "action@github.com"
-        git add .
-        # Force the build to succeed, even if no files were changed
-        git commit -m 'Update generated files' || true
-        git push
+      # Commit all changed files to the repository
+      - name: Commit to the repo
+        run: |
+          git config --global user.name "GitHub Action"
+          git config --global user.email "action@github.com"
+          git add .
+          # Force the build to succeed, even if no files were changed
+          git commit -m 'Update generated files' || true
+          git push
