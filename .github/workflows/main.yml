@@ -2,13 +2,11 @@ name: Generate Stats Images
 
 on:
   push:
-    branches: [master]
+    branches:
+      - master
   schedule:
     - cron: "35 0 * * *"
   workflow_dispatch:
-
-permissions:
-  contents: write
 
 defaults:
   run:
@@ -17,12 +15,16 @@ defaults:
 jobs:
   build:
     runs-on: ubuntu-latest
-    timeout-minutes: 120
+    timeout-minutes: 15
+    permissions:
+      contents: write
 
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout code
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2 tag
+      - name: Set up Zig
+        uses: mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29 # v2 tag
         with:
           version: 0.16.0
 
@@ -43,6 +45,10 @@ jobs:
           # TODO: Remove this when they get their API working again
           # https://github.com/orgs/community/discussions/192970
           MAX_RETRIES: 5
+
+      - name: Move generated svg files to the correct location
+        run: |
+          mv *.svg generated/
 
       # Commit all changed files to the repository
       - name: Commit to the repo
