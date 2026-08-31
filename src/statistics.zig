@@ -22,6 +22,7 @@ const Repository = struct {
     lines_changed: u32,
     views: u32,
     private: bool,
+    is_fork: bool,
 
     pub fn deinit(self: @This(), allocator: std.mem.Allocator) void {
         allocator.free(self.name);
@@ -264,6 +265,7 @@ fn getReposByYear(
         \\          stargazerCount
         \\          forkCount
         \\          isPrivate
+        \\          isFork
         \\          languages(
         \\              first: 100,
         \\              orderBy: { direction: DESC, field: SIZE }
@@ -320,6 +322,7 @@ fn getReposByYear(
                         stargazerCount: u32,
                         forkCount: u32,
                         isPrivate: bool,
+                        isFork: bool,
                         languages: ?struct {
                             edges: ?[]struct {
                                 size: u32,
@@ -391,6 +394,7 @@ fn getReposByYear(
             .stars = raw_repo.stargazerCount,
             .forks = raw_repo.forkCount,
             .private = raw_repo.isPrivate,
+            .is_fork = raw_repo.isFork,
             .languages = null,
             .views = 0,
             .lines_changed = 0,
