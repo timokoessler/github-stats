@@ -46,6 +46,7 @@ const Args = struct {
     exclude_langs: ?[]const u8 = null,
     exclude_private: bool = false,
     exclude_inherited_repos: bool = false,
+    include_repos: ?[]const u8 = null,
     overview_output_file: ?[]const u8 = null,
     languages_output_file: ?[]const u8 = null,
     overview_template: ?[]const u8 = null,
@@ -214,6 +215,12 @@ pub fn main(init: std.process.Init) !void {
         else
             null;
     defer if (exclude_langs) |exclude| allocator.free(exclude);
+    const include_repos =
+        if (args.include_repos) |include|
+            try splitList(allocator, include, " ,\t\r\n|\"'\x00")
+        else
+            null;
+    defer if (include_repos) |include| allocator.free(include);
 
     var stats: Statistics = if (args.json_input_file) |path| stats: {
         const data = try readFile(allocator, io, path);
@@ -277,7 +284,8 @@ pub fn main(init: std.process.Init) !void {
         }
         const is_owned = !repository.fork and
             std.mem.eql(u8, repository.owner_login, stats.user);
-        if (args.exclude_inherited_repos and !is_owned) continue;
+        const is_included = glob.matchAny(include_repos orelse &.{}, repository.name);
+        if (args.exclude_inherited_repos and !is_owned and !is_included) continue;
         aggregate_stats.stars += repository.stars;
         aggregate_stats.forks += repository.forks;
         aggregate_stats.lines_changed += repository.lines_changed;
