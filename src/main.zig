@@ -45,7 +45,7 @@ const Args = struct {
     exclude_repos: ?[]const u8 = null,
     exclude_langs: ?[]const u8 = null,
     exclude_private: bool = false,
-    exclude_forked_repos: bool = false,
+    exclude_inherited_repos: bool = false,
     overview_output_file: ?[]const u8 = null,
     languages_output_file: ?[]const u8 = null,
     overview_template: ?[]const u8 = null,
@@ -271,11 +271,13 @@ pub fn main(init: std.process.Init) !void {
     defer aggregate_stats.language_colors.deinit(allocator);
     for (stats.repositories) |repository| {
         if (glob.matchAny(exclude_repos orelse &.{}, repository.name) or
-            (args.exclude_private and repository.private) or
-            (args.exclude_forked_repos and repository.is_fork))
+            (args.exclude_private and repository.private))
         {
             continue;
         }
+        const is_owned = !repository.fork and
+            std.mem.eql(u8, repository.owner_login, stats.user);
+        if (args.exclude_inherited_repos and !is_owned) continue;
         aggregate_stats.stars += repository.stars;
         aggregate_stats.forks += repository.forks;
         aggregate_stats.lines_changed += repository.lines_changed;
