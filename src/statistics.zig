@@ -642,6 +642,13 @@ fn getLinesChanged(
                     try q.push(allocator, item);
                 }
             },
+            .not_found => {
+                std.log.warn(
+                    "Skipping lines changed for {s}: repository not found " ++
+                        "(renamed, transferred, deleted, or inaccessible).",
+                    .{item.repo.name},
+                );
+            },
             else => |status| {
                 std.log.info(
                     "Failed to get contribution data for {s} ({?s})",
